@@ -1,0 +1,3 @@
+com.btourman.check.build.checkstyle.CheckstyleLauncher
+com.btourman.check.build.cpd.CPDLauncher
+com.btourman.check.build.pmd.PMDLauncher
