@@ -58,22 +58,12 @@ public class App extends AbstractMojo {
 				JsonNode checkbuild = root.get(ModuleNameConst.CHECKBUILD);
 				CheckbuildConf conf = checkbuild != null ? mapper.readValue(checkbuild.toString(), CheckbuildConf.class) : new CheckbuildConf();
 
-				try {
-					DisplayDependencyUpdatesMojo updates = new DisplayDependencyUpdatesMojo();
-					updates.setProject(project);
-
-					// System.out.println(updates.getHelper().getArtifactFactory());
-					updates.execute();
-				} catch (SecurityException | IllegalArgumentException | MojoFailureException e) {
-					e.printStackTrace();
-				}
-
-				// while (loader.hasNext()) {
-				// ILauncher launcher = loader.next();
-				// if (conf.isEnable(launcher.getName())) {
-				// launcher.launch(basedirPath, root.get(launcher.getName()));
-				// }
-				// }
+				 while (loader.hasNext()) {
+                     ILauncher launcher = loader.next();
+                     if (conf.isEnable(launcher.getName())) {
+                         launcher.launch(basedirPath, root.get(launcher.getName()));
+                     }
+                 }
 
 			} catch (IOException e) {
 				e.printStackTrace();
