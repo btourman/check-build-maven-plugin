@@ -11,23 +11,25 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class PMDLauncher implements ILauncher {
 
-	@Override
-	public int launch(String basedir, JsonNode confNode) {
+    @Override
+    public int launch(String basedir, JsonNode confNode) {
 
-		try {
-			PMDConf conf = confNode != null ? new ObjectMapper().readValue(confNode.toString(), PMDConf.class) : new PMDConf();
-			PMD.run(new String[] { "-d", basedir, "-l", "java", "-R", "rulesets/internal/all-java.xml", "-shortnames", "-f", conf.getFormat(),
-					"-min", String.valueOf(conf.getPriority()), "-r", "checkbuild/pmd." + conf.getExtensionFile() });
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+        int status = 1;
+        try {
+            PMDConf conf = confNode != null ? new ObjectMapper().readValue(confNode.toString(), PMDConf.class) : new PMDConf();
+            status = PMD.run(new String[]{"-d", basedir, "-l", "java", "-R", "rulesets/internal/all-java.xml",
+                    "-shortnames", "-f", conf.getFormat(),
+                    "-min", String.valueOf(conf.getPriority()), "-r", "checkbuild/pmd." + conf.getExtensionFile()});
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
-		return 0;
-	}
+        return status > 0 ? 1 : 0;
+    }
 
-	@Override
-	public String getName() {
-		return ModuleNameConst.PMD;
-	}
+    @Override
+    public String getName() {
+        return ModuleNameConst.PMD;
+    }
 
 }
