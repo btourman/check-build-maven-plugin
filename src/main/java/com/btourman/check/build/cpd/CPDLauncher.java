@@ -20,24 +20,25 @@ public class CPDLauncher implements ILauncher {
 
         try {
             final CPDConf conf = confNode != null ? new ObjectMapper().readValue(confNode.toString(), CPDConf.class) : new CPDConf();
+            final Path outputFile = Paths.get("checkbuild/cpd." + conf.getExtensionFile());
             System.setOut(new PrintStream(System.out) {
                 @Override
                 public void println(String x) {
-                    Path file = Paths.get("checkbuild/cpd." + conf.getExtensionFile());
                     try {
-                        Files.write(file, x.getBytes());
+                        Files.write(outputFile, x.getBytes());
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
                 }
             });
+            System.setProperty("net.sourceforge.pmd.cli.noExit", "true");
             CPD.main(new String[]{"--files", basedir, "--minimum-tokens", String.valueOf(conf.getMinimumToken()),
                     "--format", conf.getFormat()});
+            return Files.exists(outputFile) ? 1 : 0;
         } catch (IOException e) {
             e.printStackTrace();
+            return 1;
         }
-
-        return 0;
     }
 
     @Override
