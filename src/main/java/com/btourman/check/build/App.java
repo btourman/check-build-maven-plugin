@@ -19,56 +19,61 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * Goal which touches a timestamp file.
- * 
+ *
  * @goal start
  * @phase generate-sources
  */
 public class App extends AbstractMojo {
 
-	/**
-	 * @parameter expression="${project}"
-	 */
-	private MavenProject	project;
+    /**
+     * @parameter property="project"
+     */
+    private MavenProject project;
 
-	@Override
-	public void execute() throws MojoExecutionException {
-		String basedirPath = project.getBasedir().getPath();
-		Path checkbuildPath = Paths.get(basedirPath, ".checkbuild");
+    @Override
+    public void execute() throws MojoExecutionException {
+        String basedirPath = project.getBasedir().getPath();
+        Path checkbuildPath = Paths.get(basedirPath, ".checkbuild");
 
-		Path checkbuildDir = Paths.get(basedirPath, "checkbuild");
-		if (Files.exists(checkbuildDir)) {
-			try {
-				FolderDeleteNIO.delete(checkbuildDir);
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
+        Path checkbuildDir = Paths.get(basedirPath, "checkbuild");
+        if (Files.exists(checkbuildDir)) {
+            try {
+                FolderDeleteNIO.delete(checkbuildDir);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
 
-		try {
-			Files.createDirectory(checkbuildDir);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+        try {
+            Files.createDirectory(checkbuildDir);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
-		Iterator<ILauncher> loader = ServiceLoader.load(ILauncher.class).iterator();
-		if (Files.exists(checkbuildPath)) {
-			ObjectMapper mapper = new ObjectMapper();
-			try {
-				JsonNode root = mapper.readTree(checkbuildPath.toFile());
-				JsonNode checkbuild = root.get(ModuleNameConst.CHECKBUILD);
-				CheckbuildConf conf = checkbuild != null ? mapper.readValue(checkbuild.toString(), CheckbuildConf.class) : new CheckbuildConf();
+        Iterator<ILauncher> loader = ServiceLoader.load(ILauncher.class).iterator();
+        if (Files.exists(checkbuildPath)) {
+            ObjectMapper mapper = new ObjectMapper();
+            try {
+                JsonNode root = mapper.readTree(checkbuildPath.toFile());
+                JsonNode checkbuild = root.get(ModuleNameConst.CHECKBUILD);
+                CheckbuildConf conf = checkbuild != null ? mapper.readValue(checkbuild.toString(), CheckbuildConf.class) : new CheckbuildConf();
 
-				 while (loader.hasNext()) {
-                     ILauncher launcher = loader.next();
-                     if (conf.isEnable(launcher.getName())) {
-                         launcher.launch(basedirPath, root.get(launcher.getName()));
-                     }
-                 }
+                int exit = 0;
+                while (loader.hasNext() && (conf.isContinueOnError() || (!conf.isContinueOnError() && exit == 0))) {
+                    ILauncher launcher = loader.next();
+                    if (conf.isEnable(launcher.getName())) {
+                        exit = launcher.launch(basedirPath, root.get(launcher.getName()));
+                    }
+                }
+                if (conf.isAllowFailures())
+                    System.exit(0);
+                else
+                    System.exit(exit);
 
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
 
-	}
+    }
 }
