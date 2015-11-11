@@ -17,7 +17,7 @@ public class PMDLauncher implements ILauncher {
         int status = 1;
         try {
             PMDConf conf = confNode != null ? new ObjectMapper().readValue(confNode.toString(), PMDConf.class) : new PMDConf();
-            status = PMD.run(new String[]{"-d", basedir, "-l", "java", "-R", "rulesets/internal/all-java.xml",
+            status = PMD.run(new String[]{"-d", basedir, "-l", "java", "-R", conf.getRulesets(),
                     "-shortnames", "-f", conf.getFormat(),
                     "-min", String.valueOf(conf.getPriority()), "-r", "checkbuild/pmd." + conf.getExtensionFile()});
         } catch (IOException e) {
