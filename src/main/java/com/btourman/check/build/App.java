@@ -32,8 +32,8 @@ public class App extends AbstractMojo {
 
     @Override
     public void execute() throws MojoExecutionException {
-        String basedirPath = project.getBasedir().getPath();
-        Path checkbuildPath = Paths.get(basedirPath, ".checkbuild");
+        String basedirPath    = project.getBasedir().getPath();
+        Path   checkbuildPath = Paths.get(basedirPath, ".checkbuild");
 
         Path checkbuildDir = Paths.get(basedirPath, "checkbuild");
         if (Files.exists(checkbuildDir)) {
@@ -62,9 +62,17 @@ public class App extends AbstractMojo {
                 while (loader.hasNext() && (conf.isContinueOnError() || (!conf.isContinueOnError() && exit == 0))) {
                     ILauncher launcher = loader.next();
                     if (conf.isEnable(launcher.getName())) {
-                        exit = launcher.launch(basedirPath, root.get(launcher.getName()));
+                        int status = launcher.launch(basedirPath, root.get(launcher.getName()));
+                        if (exit != 1) {
+                            exit = status;
+                        }
                     }
                 }
+
+                if (!conf.isKeepFiles()) {
+                    FolderDeleteNIO.delete(checkbuildDir);
+                }
+
                 if (conf.isAllowFailures())
                     System.exit(0);
                 else
@@ -74,6 +82,7 @@ public class App extends AbstractMojo {
                 e.printStackTrace();
             }
         }
+
 
     }
 }
