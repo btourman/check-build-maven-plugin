@@ -1,6 +1,9 @@
 package com.btourman.check.build.checkstyle;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import com.btourman.check.build.ILauncher;
 import com.btourman.check.build.ModuleNameConst;
@@ -10,22 +13,22 @@ import com.puppycrawl.tools.checkstyle.Main;
 
 public class CheckstyleLauncher implements ILauncher {
 
-	@Override
-	public int launch(String basedir, JsonNode confNode) {
-		try {
-			CheckstyleConf conf = confNode != null ? new ObjectMapper().readValue(confNode.toString(), CheckstyleConf.class) : new CheckstyleConf();
-			Main.main(new String[] { "-f", conf.getFormat(), basedir, "-c", conf.getConfigurationFile(), "-o",
-					"checkbuild/checkstyle." + conf.getExtensionFile() });
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+    @Override
+    public int launch(final String basedir, final JsonNode confNode) {
+        try {
+            CheckstyleConf conf = confNode != null ? new ObjectMapper().readValue(confNode.toString(), CheckstyleConf.class) : new CheckstyleConf();
+            final String outputFile = "checkbuild/checkstyle." + conf.getExtensionFile();
+            MainCheckstyle.main(new String[]{"-f", conf.getFormat(), basedir, "-c", conf.getConfigurationFile(), "-o",
+                    outputFile});
+            return Files.exists(Paths.get(outputFile)) ? 1 : 0;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return 1;
+        }
+    }
 
-		return 0;
-	}
-
-	@Override
-	public String getName() {
-		return ModuleNameConst.CHECKSTYLE;
-	}
-
+    @Override
+    public String getName() {
+        return ModuleNameConst.CHECKSTYLE;
+    }
 }
