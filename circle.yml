@@ -3,3 +3,4 @@ deployment:
     branch: master
     commands:
       - mvn clean package
+      - scp target/check-build.jar $USER@$HOSTNAME:$DEPLOY_PATH
