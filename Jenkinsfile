@@ -20,7 +20,7 @@ pipeline {
     }
     post {
     always {
-      slackSend (color: '#00FF00', message: currentBuild.result)
+        slackSend (color: '#00FF00', message: "${currentBuild.result}")
     }
   }
 }
